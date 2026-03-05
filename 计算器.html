@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>简单计算器 · 极简风格</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: linear-gradient(145deg, #2b3a4a 0%, #1d2a35 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+            padding: 16px;
+        }
+
+        .calculator {
+            width: 100%;
+            max-width: 380px;
+            background: #1e2b38;
+            border-radius: 36px;
+            box-shadow: 0 20px 35px rgba(0,0,0,0.6), inset 0 -2px 5px rgba(0,0,0,0.4), inset 0 2px 5px rgba(255,255,255,0.1);
+            padding: 22px 18px 30px 18px;
+        }
+
+        .display {
+            background: #a5b8a2;
+            background: linear-gradient(165deg, #b4cfaa 0%, #d1e4ca 100%);
+            border-radius: 28px;
+            padding: 20px 18px;
+            margin-bottom: 25px;
+            box-shadow: inset 0 5px 8px rgba(0,0,0,0.25), 0 2px 4px rgba(255,255,255,0.3);
+            border: 1px solid #81977a;
+        }
+
+        #display-value {
+            font-size: 3rem;
+            font-weight: 500;
+            font-family: 'Courier New', monospace;
+            text-align: right;
+            color: #1e3a2f;
+            text-shadow: 0 1px 2px #e2ffe0;
+            word-wrap: break-word;
+            word-break: break-all;
+            line-height: 1.2;
+            min-height: 4.2rem;
+            letter-spacing: 1px;
+        }
+
+        .button-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+
+        .btn {
+            border: none;
+            border-radius: 30px;
+            padding: 18px 8px;
+            font-size: 1.8rem;
+            font-weight: 600;
+            background: #eef3f0;
+            color: #1d2f3f;
+            box-shadow: 0 8px 0 #a2b3ac, 0 6px 12px rgba(0,0,0,0.4);
+            cursor: pointer;
+            transition: all 0.06s ease-in;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(255,255,255,0.3);
+            user-select: none;
+            touch-action: manipulation;
+        }
+
+        .btn:active {
+            transform: translateY(6px);
+            box-shadow: 0 2px 0 #7b9188, 0 5px 10px rgba(0,0,0,0.4);
+        }
+
+        .operator {
+            background: #faa75e;
+            color: #2d2d2d;
+            box-shadow: 0 8px 0 #b36d2e, 0 6px 12px rgba(0,0,0,0.4);
+        }
+
+        .operator:active {
+            transform: translateY(6px);
+            box-shadow: 0 2px 0 #9e551f, 0 5px 10px rgba(0,0,0,0.4);
+        }
+
+        .equals {
+            background: #4d9f8c;
+            color: white;
+            font-size: 2.4rem;
+            box-shadow: 0 8px 0 #2a685a, 0 6px 12px rgba(0,0,0,0.4);
+            grid-column: span 4;
+            margin-top: 10px;
+            padding: 16px 8px;
+        }
+
+        .equals:active {
+            transform: translateY(6px);
+            box-shadow: 0 2px 0 #1f4f44, 0 5px 10px rgba(0,0,0,0.4);
+        }
+
+        .clear {
+            background: #d6726b;
+            color: white;
+            box-shadow: 0 8px 0 #9b504a, 0 6px 12px rgba(0,0,0,0.4);
+        }
+
+        .clear:active {
+            transform: translateY(6px);
+            box-shadow: 0 2px 0 #7f3f3a, 0 5px 10px rgba(0,0,0,0.4);
+        }
+
+        .btn-zero {
+            font-size: 2rem;
+        }
+
+        /* 简洁点击反馈 */
+        .btn:focus-visible {
+            outline: 2px solid #ffd966;
+        }
+
+        /* 手机小屏优化 */
+        @media (max-width: 400px) {
+            .btn {
+                padding: 16px 5px;
+                font-size: 1.6rem;
+            }
+            .display {
+                padding: 16px 14px;
+            }
+            #display-value {
+                font-size: 2.6rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <!-- 显示屏 -->
+        <div class="display">
+            <div id="display-value">0</div>
+        </div>
+
+        <!-- 按钮区域 -->
+        <div class="button-grid">
+            <button class="btn clear" data-action="clear">C</button>
+            <button class="btn operator" data-action="operator">/</button>
+            <button class="btn operator" data-action="operator">*</button>
+            <button class="btn operator" data-action="operator">-</button>
+
+            <button class="btn" data-action="number">7</button>
+            <button class="btn" data-action="number">8</button>
+            <button class="btn" data-action="number">9</button>
+            <button class="btn operator" data-action="operator">+</button>
+
+            <button class="btn" data-action="number">4</button>
+            <button class="btn" data-action="number">5</button>
+            <button class="btn" data-action="number">6</button>
+            <button class="btn operator" data-action="operator" style="opacity:0.4; cursor:default;" disabled></button>
+            <!-- 占位空白，保持网格整齐，但禁用不可见，也可以用更优雅方式，为了快速，放一个不可用的占位符 -->
+
+            <button class="btn" data-action="number">1</button>
+            <button class="btn" data-action="number">2</button>
+            <button class="btn" data-action="number">3</button>
+            <!-- 第四列第四行原本是占位，现在把减号移到上面，这里补一个不可用的空位，或者放一个空白按钮 -->
+            <button class="btn" data-action="number" style="visibility:hidden; pointer-events:none;"></button>
+
+            <!-- 最后一行：0  .  C已经放上面了，所以重新组织：数字0，小数点， 剩下两个位置？我们用新的行，在grid中自动换行，但我们的grid是6行，需重新安排 -->
+            <!-- 为了方便，干脆重新调整网格：将C放在第一列，然后运算符放2,3,4列，第二行数字7-9 +，第三行4-6 空白，第四行1-3 空白，第五行0 . 和一个运算符？有点乱，直接重构成熟悉的布局 -->
+            <!-- 为了整洁，我们重新规划6行4列，保证每个按钮都有意义 -->
+        </div>
+
+        <!-- 重新规划更清晰的按钮布局（上面div有点实验失误，我们直接重构成清晰的6行） -->
+        <div style="margin-top: 15px;"></div>
+        <div class="button-grid" style="margin-top: 5px;">
+            <!-- 第一行（功能行）已经包含在第一个grid里，但为了不出错，我们完全用新的grid覆盖，移除上面不完整的部分 最简单：重新写一个完整grid，将之前混乱的覆盖掉 -->
+        </div>
+
+        <!-- 重新开始：用一个干净整洁的6行grid -->
+        <div class="button-grid">
+            <!-- 第1行： 7 8 9 / -->
+            <button class="btn" data-action="number">7</button>
+            <button class="btn" data-action="number">8</button>
+            <button class="btn" data-action="number">9</button>
+            <button class="btn operator" data-action="operator">/</button>
+
+            <!-- 第2行： 4 5 6 * -->
+            <button class="btn" data-action="number">4</button>
+            <button class="btn" data-action="number">5</button>
+            <button class="btn" data-action="number">6</button>
+            <button class="btn operator" data-action="operator">*</button>
+
+            <!-- 第3行： 1 2 3 - -->
+            <button class="btn" data-action="number">1</button>
+            <button class="btn" data-action="number">2</button>
+            <button class="btn" data-action="number">3</button>
+            <button class="btn operator" data-action="operator">-</button>
+
+            <!-- 第4行： 0  .  C  + -->
+            <button class="btn btn-zero" data-action="number">0</button>
+            <button class="btn" data-action="decimal">.</button>
+            <button class="btn clear" data-action="clear">C</button>
+            <button class="btn operator" data-action="operator">+</button>
+
+            <!-- 第5行： 等号 = 跨全部四列 -->
+            <button class="btn equals" data-action="equals" style="grid-column: span 4;">=</button>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            // ----- 状态变量 -----
+            let currentValue = '0';            // 当前显示字符串
+            let firstOperand = null;            // 存储第一个操作数 (数字类型)
+            let operator = null;                // 当前运算符
+            let waitingForSecond = false;       // 是否正在等待第二个操作数
+
+            const displayElement = document.getElementById('display-value');
+
+            // ----- 工具函数：更新屏幕 -----
+            function updateDisplay() {
+                displayElement.innerText = currentValue;
+            }
+
+            // ----- 清除所有 (C) -----
+            function clearAll() {
+                currentValue = '0';
+                firstOperand = null;
+                operator = null;
+                waitingForSecond = false;
+                updateDisplay();
+            }
+
+            // ----- 格式化数字：避免过长小数，去掉尾随零 -----
+            function formatResult(value) {
+                if (typeof value === 'number' && !isFinite(value)) {
+                    return 'Error';
+                }
+                // 保留10位小数，并去除末尾无用的零和小数点
+                let rounded = value.toFixed(10).replace(/\.?0+$/, '');
+                // 如果变成空字符串（例如 0 的情况），补回 '0'
+                if (rounded === '') rounded = '0';
+                return rounded;
+            }
+
+            // ----- 执行计算 (firstOperand 运算符 currentValue) -----
+            function performCalculation() {
+                if (firstOperand === null || operator === null) return null;
+
+                const a = firstOperand;               // 已经是数字
+                const b = parseFloat(currentValue);    // 当前显示转数字
+                if (isNaN(b)) return null;
+
+                let result;
+                switch (operator) {
+                    case '+': result = a + b; break;
+                    case '-': result = a - b; break;
+                    case '*': result = a * b; break;
+                    case '/': 
+                        if (b === 0) {
+                            return 'Error';           // 除零错误
+                        }
+                        result = a / b; 
+                        break;
+                    default: return null;
+                }
+
+                // 处理溢出或非数字
+                if (!isFinite(result)) return 'Error';
+                return result;
+            }
+
+            // ----- 数字输入 -----
+            function inputDigit(digit) {
+                // 如果当前显示是 Error，先重置为正常状态 (类似于自动清除)
+                if (currentValue === 'Error') {
+                    clearAll();
+                }
+
+                // 等待第二个操作数时，输入数字应该替换当前显示
+                if (waitingForSecond) {
+                    currentValue = digit;
+                    waitingForSecond = false;
+                } else {
+                    // 普通输入：处理前导零
+                    if (currentValue === '0') {
+                        currentValue = digit;
+                    } else {
+                        // 限制总长度不超过 14 个字符 (避免溢出)
+                        if (currentValue.length >= 14) return;  // 太长不处理
+                        currentValue = currentValue + digit;
+                    }
+                }
+                updateDisplay();
+            }
+
+            // ----- 小数点输入 -----
+            function inputDecimal() {
+                if (currentValue === 'Error') {
+                    clearAll();
+                }
+
+                if (waitingForSecond) {
+                    // 如果等待第二操作数，按小数点显示 "0."
+                    currentValue = '0.';
+                    waitingForSecond = false;
+                } else {
+                    // 已经有点，则忽略
+                    if (currentValue.includes('.')) return;
+                    // 避免过长
+                    if (currentValue.length >= 14) return;
+                    // 如果当前是空或只是 '0'，补成 '0.'
+                    if (currentValue === '' || currentValue === '0') {
+                        currentValue = '0.';
+                    } else {
+                        currentValue = currentValue + '.';
+                    }
+                }
+                updateDisplay();
+            }
+
+            // ----- 运算符处理 -----
+            function handleOperator(nextOp) {
+                // 如果显示错误，禁止运算符操作 (必须按C)
+                if (currentValue === 'Error') return;
+
+                // 当前显示值转为数字备用
+                const currentNum = parseFloat(currentValue);
+
+                // 情景1: 已经有运算符且正在等待第二操作数 (例如按了 + 之后又按 -)
+                if (operator && waitingForSecond) {
+                    // 只替换运算符，不计算
+                    operator = nextOp;
+                    return;
+                }
+
+                // 情景2: 已经有运算符，且已有第二个操作数 (waitingForSecond = false) -> 先计算再应用新运算符
+                if (operator && !waitingForSecond) {
+                    const result = performCalculation();
+                    if (result === 'Error') {
+                        currentValue = 'Error';
+                        firstOperand = null;
+                        operator = null;
+                        waitingForSecond = false;
+                        updateDisplay();
+                        return;
+                    }
+                    // 计算结果有效，格式化为字符串
+                    currentValue = formatResult(result);
+                    // 将结果作为新的 firstOperand
+                    firstOperand = parseFloat(currentValue);
+                    operator = nextOp;               // 设置新运算符
+                    waitingForSecond = true;          // 等待下一个数
+                    updateDisplay();
+                    return;
+                }
+
+                // 情景3: 没有运算符 (首次按运算符)
+                if (!operator) {
+                    firstOperand = currentNum;
+                    operator = nextOp;
+                    waitingForSecond = true;
+                    // 显示保持不变 (仍然显示第一个操作数)
+                    // 但不需要更新显示
+                }
+            }
+
+            // ----- 等号处理 -----
+            function handleEquals() {
+                if (currentValue === 'Error') return;  // 错误时等号无效
+
+                // 必须有运算符且不在等待第二操作数 (即已经输入第二个数)
+                if (operator && !waitingForSecond) {
+                    const result = performCalculation();
+                    if (result === 'Error') {
+                        currentValue = 'Error';
+                        firstOperand = null;
+                        operator = null;
+                        waitingForSecond = false;
+                        updateDisplay();
+                        return;
+                    }
+                    // 正常结果
+                    currentValue = formatResult(result);
+                    firstOperand = null;      // 清除之前存储的操作数，等号后重新开始
+                    operator = null;
+                    waitingForSecond = false;  // 回到初始状态，但显示为结果
+                    updateDisplay();
+                }
+                // 如果不符合条件 (例如没有运算符，或还在等待第二个数) 就什么都不做
+            }
+
+            // ----- 事件绑定 (通过按钮文本判断) -----
+            const buttons = document.querySelectorAll('.btn');
+            buttons.forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    // 禁止 disabled 按钮（如果有占位符，但没有disabled，我们忽略不可见不可点的，但安全起见）
+                    if (btn.disabled) return;
+                    const text = btn.innerText.trim();
+
+                    // 数字: 0-9
+                    if (/^[0-9]$/.test(text)) {
+                        inputDigit(text);
+                    }
+                    // 小数点
+                    else if (text === '.') {
+                        inputDecimal();
+                    }
+                    // 清除 C
+                    else if (text === 'C') {
+                        clearAll();
+                    }
+                    // 运算符 + - * /
+                    else if (['+', '-', '*', '/'].includes(text)) {
+                        handleOperator(text);
+                    }
+                    // 等号 =
+                    else if (text === '=') {
+                        handleEquals();
+                    }
+                    // 其他 (可能占位空白) 忽略
+                });
+            });
+
+            // 可选：键盘支持（简单附加）
+            window.addEventListener('keydown', (e) => {
+                const key = e.key;
+                // 阻止默认滚动/提交等
+                if (/^[0-9]$/.test(key)) {
+                    e.preventDefault();
+                    inputDigit(key);
+                } else if (key === '.') {
+                    e.preventDefault();
+                    inputDecimal();
+                } else if (key === '+' || key === '-' || key === '*' || key === '/') {
+                    e.preventDefault();
+                    handleOperator(key);
+                } else if (key === '=' || key === 'Enter') {
+                    e.preventDefault();
+                    handleEquals();
+                } else if (key === 'Escape' || key === 'c' || key === 'C') {
+                    e.preventDefault();
+                    clearAll();
+                }
+            });
+
+            // 初始化显示
+            updateDisplay();
+        })();
+    </script>
+</body>
+</html>
